@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree</title>
+    <link rel="stylesheet" href="tree.css">
+</head>
+
+<body>
+    <h1>Tree</h1>
+    <div class="metaDataContainer">
+        <div class="fileSelectionArea">
+            <div id="dropZone">Drag & Drop</div>
+            <input type="file" id="fileInput" />
+            <label for="fileInput" class="file-upload-label">Choose File</label>
+        </div>
+        <div id="jsonContentContainer" class="jsonContentContainerHide">
+            <pre id="jsonContent"></pre>
+        </div>
+    </div>
+    
+    <div id="exceptionWindow"></div>
+    <svg class="svgTreeHide"></svg>
+    
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="tree.js"></script>
+</body>
+
+</html>

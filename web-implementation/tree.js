@@ -1,0 +1,156 @@
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const exceptionWindow = document.getElementById('exceptionWindow');
+
+let jsonData = null;
+
+function onResize() {
+    if (jsonData) {
+        const svg = document.querySelector("svg");
+        svg.innerHTML = "";
+        drawTree(jsonData);
+    }
+}
+
+window.addEventListener("resize", onResize);
+
+// Function to handle reading the file
+function handleFile(file) {
+    if (file && file.type === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                jsonData = JSON.parse(e.target.result);
+                document.getElementById('jsonContentContainer').classList.add("jsonContentContainerShow")
+                document.getElementById('jsonContent').textContent = JSON.stringify(jsonData, null, 4);
+                console.log(jsonData);
+                const svg = document.querySelector("svg");
+                svg.innerHTML = "";
+                svg.classList.add("svgTree");
+                drawTree(jsonData);
+                exceptionWindow.textContent = "";
+            } catch (error) {
+                exceptionWindow.textContent = "Error parsing JSON";
+            }
+        };
+        reader.readAsText(file);
+    } else {
+        exceptionWindow.textContent = "Please select a valid JSON file";
+    }
+}
+
+// Event listener for file input (manual selection)
+fileInput.addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    handleFile(file);
+});
+
+// Drag and drop functionality
+dropZone.addEventListener('dragover', function (event) {
+    event.preventDefault();
+    dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', function (event) {
+    dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', function (event) {
+    event.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = event.dataTransfer.files[0];
+    handleFile(file);
+});
+
+function convertToD3Tree(jsonNode) {
+    const node = { value: jsonNode.value };
+    node.children = [];
+    if (jsonNode.left) node.children.push(convertToD3Tree(jsonNode.left));
+    if (jsonNode.right) node.children.push(convertToD3Tree(jsonNode.right));
+    return node;
+}
+
+function drawTree(jsonData) {
+    const svg = d3.select("svg")
+        .attr("width", "100%")
+        .attr("height", "100%");
+
+    // Calculate the dimensions based on the data
+    const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+    // const width = window.innerWidth - margin.left - margin.right; // 100% width
+    const width = window.innerWidth - margin.left - margin.right;
+
+    // Convert the JSON data to a D3 hierarchy
+    const root = d3.hierarchy(convertToD3Tree(jsonData), d => d.children);
+
+    // Automatically adjust the height based on the tree's depth
+    const nodeHeight = 100; // Space between nodes vertically
+    const height = root.height * nodeHeight + margin.top + margin.bottom;
+    svg.attr("height", height);
+
+    // Create a group element to apply margin transformations
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Set up the tree layout with the dynamic width and height
+    const treeLayout = d3.tree().size([width, height - margin.top - margin.bottom]);
+
+    treeLayout.separation((a, b) => {
+        return 1; // More separation for siblings
+    });
+    
+    // Apply the tree layout to the root
+    treeLayout(root);
+
+    // Draw the links (edges)
+    let link = g.selectAll(".link")
+        .data(root.links())
+        .enter().append("path")
+        .attr("class", "link")
+        .attr("d", d3.linkVertical()
+            .x(d => d.x)
+            .y(d => d.y)
+            .target(d => ({x: d.target.x, y: d.target.y})));
+
+    // Draw the nodes
+    const node = g.selectAll(".node")
+        .data(root.descendants())
+        .enter().append("g")
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.x},${d.y})`)
+        .call(d3.drag()
+            .on("start", function(event, d) {
+                d3.select(this).raise().attr("stroke", "black");
+            })
+            .on("drag", function(event, d) {
+                // Update node position
+                d.x = event.x;
+                d.y = event.y;
+                d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
+
+                // Update the links dynamically during the drag
+                link.attr("d", function(linkData) {
+                    return d3.linkVertical()
+                        .x(d => d.x)
+                        .y(d => d.y)({
+                            source: { x: linkData.source.x, y: linkData.source.y },
+                            target: { x: linkData.target.x, y: linkData.target.y }
+                        });
+                });
+            })
+            .on("end", function(event, d) {
+                d3.select(this).attr("stroke", null);
+            }));
+
+    // Append circles for each node
+    node.append("circle").attr("r", 15);
+
+    // Append text for each node, centered in the circle
+    node.append("text")
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "middle")
+        .text(d => d.data.value);
+
+}
+
+
+
