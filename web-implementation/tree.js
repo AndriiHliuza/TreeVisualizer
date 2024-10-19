@@ -142,12 +142,13 @@ function drawTree(jsonData) {
             }));
 
     // Append circles for each node
-    node.append("circle").attr("r", 15);
+    node.append("circle").attr("r", 20);
 
     // Append text for each node, centered in the circle
     node.append("text")
         .attr("dy", "0.35em")
         .attr("text-anchor", "middle")
+        .style("font-size", "18px")
         .text(d => d.data.value);
 
 }
