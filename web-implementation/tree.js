@@ -23,7 +23,6 @@ function handleFile(file) {
                 jsonData = JSON.parse(e.target.result);
                 document.getElementById('jsonContentContainer').classList.add("jsonContentContainerShow")
                 document.getElementById('jsonContent').textContent = JSON.stringify(jsonData, null, 4);
-                console.log(jsonData);
                 const svg = document.querySelector("svg");
                 svg.innerHTML = "";
                 svg.classList.add("svgTree");
