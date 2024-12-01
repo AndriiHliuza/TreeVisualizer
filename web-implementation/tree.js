@@ -183,7 +183,7 @@ function drawTree(jsonData) {
                 d3.select(this).attr("stroke", null);
             }));
 
-    // Append circles for each node
+    // Append ellipses for each node
     node.append("ellipse")
         .attr("rx", 20) // Default horizontal radius
         .attr("ry", 20) // Fixed vertical radius
@@ -201,8 +201,16 @@ function drawTree(jsonData) {
     node.each(function (d) {
         const text = d.data.value;
         const textLength = text.length;
-        const rx = Math.max(20, textLength * 6); // Adjust horizontal radius based on text length
+
+        // Dynamically adjust ellipse width
+        const rx = Math.max(20, textLength * 4); // Adjust horizontal radius based on text length
         d3.select(this).select("ellipse").attr("rx", rx); // Set the dynamic width
+
+        // Dynamically adjust font size
+        const fontSize = Math.max(6, 16 - textLength / 2) + "px";
+        d3.select(this).select("text")
+            .style("font-size", fontSize)
+            .text(text);
     });
 
 }
