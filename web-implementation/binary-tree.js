@@ -64,40 +64,12 @@ dropZone.addEventListener('drop', function (event) {
     handleFile(file);
 });
 
-function convertBinaryToD3Tree(jsonNode) {
+function convertToD3Tree(jsonNode) {
     const node = { value: jsonNode.value };
     node.children = [];
-    if (jsonNode.left) node.children.push(convertBinaryToD3Tree(jsonNode.left));
-    if (jsonNode.right) node.children.push(convertBinaryToD3Tree(jsonNode.right));
+    if (jsonNode.left) node.children.push(convertToD3Tree(jsonNode.left));
+    if (jsonNode.right) node.children.push(convertToD3Tree(jsonNode.right));
     return node;
-}
-
-
-function convertNaryTreeToD3Tree(jsonNode) {
-    const node = { value: jsonNode.value };
-    if (jsonNode.children && Array.isArray(jsonNode.children)) {
-        node.children = jsonNode.children.map(convertNaryTreeToD3Tree);
-    }
-    return node;
-}
-
-function isNaryTree(node) {
-    if (node.children) {
-        return true;
-    }
-    return false;
-}
-
-function isBinaryTree(node) {
-    if (node.left) {
-        return true;
-    }
-
-    if (node.right) {
-        return true;
-    }
-
-    return false;
 }
 
 function drawTree(jsonData) {
@@ -110,20 +82,8 @@ function drawTree(jsonData) {
     // const width = window.innerWidth - margin.left - margin.right; // 100% width
     const width = window.innerWidth - margin.left - margin.right;
 
-    let convertedNode = null;
-    if (isBinaryTree(jsonData)) {
-        console.log("Binary tree");
-        convertedNode = convertBinaryToD3Tree(jsonData);
-    } else if (isNaryTree(jsonData)) {
-        console.log("N-ary tree");
-        convertedNode = convertNaryTreeToD3Tree(jsonData);
-    } else {
-        console.log("Falling back to default: binary tree");
-        convertedNode = convertBinaryToD3Tree(jsonData);
-    }
-
     // Convert the JSON data to a D3 hierarchy
-    const root = d3.hierarchy(convertedNode, d => d.children);
+    const root = d3.hierarchy(convertToD3Tree(jsonData), d => d.children);
 
     // Automatically adjust the height based on the tree's depth
     const nodeHeight = 100; // Space between nodes vertically
@@ -139,7 +99,7 @@ function drawTree(jsonData) {
     treeLayout.separation((a, b) => {
         return 1; // More separation for siblings
     });
-
+    
     // Apply the tree layout to the root
     treeLayout(root);
 
@@ -151,7 +111,7 @@ function drawTree(jsonData) {
         .attr("d", d3.linkVertical()
             .x(d => d.x)
             .y(d => d.y)
-            .target(d => ({ x: d.target.x, y: d.target.y })));
+            .target(d => ({x: d.target.x, y: d.target.y})));
 
     // Draw the nodes
     const node = g.selectAll(".node")
@@ -160,17 +120,17 @@ function drawTree(jsonData) {
         .attr("class", "node")
         .attr("transform", d => `translate(${d.x},${d.y})`)
         .call(d3.drag()
-            .on("start", function (event, d) {
+            .on("start", function(event, d) {
                 d3.select(this).raise().attr("stroke", "black");
             })
-            .on("drag", function (event, d) {
+            .on("drag", function(event, d) {
                 // Update node position
                 d.x = event.x;
                 d.y = event.y;
                 d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
 
                 // Update the links dynamically during the drag
-                link.attr("d", function (linkData) {
+                link.attr("d", function(linkData) {
                     return d3.linkVertical()
                         .x(d => d.x)
                         .y(d => d.y)({
@@ -179,17 +139,12 @@ function drawTree(jsonData) {
                         });
                 });
             })
-            .on("end", function (event, d) {
+            .on("end", function(event, d) {
                 d3.select(this).attr("stroke", null);
             }));
 
     // Append circles for each node
-    node.append("ellipse")
-        .attr("rx", 20) // Default horizontal radius
-        .attr("ry", 20) // Fixed vertical radius
-        .attr("fill", "white") // Set fill color
-        .attr("stroke", "steelblue") // Set border color
-        .attr("stroke-width", 3); // Set border thickness
+    node.append("circle").attr("r", 20);
 
     // Append text for each node, centered in the circle
     node.append("text")
@@ -197,13 +152,6 @@ function drawTree(jsonData) {
         .attr("text-anchor", "middle")
         .style("font-size", "18px")
         .text(d => d.data.value);
-
-    node.each(function (d) {
-        const text = d.data.value;
-        const textLength = text.length;
-        const rx = Math.max(20, textLength * 6); // Adjust horizontal radius based on text length
-        d3.select(this).select("ellipse").attr("rx", rx); // Set the dynamic width
-    });
 
 }
 

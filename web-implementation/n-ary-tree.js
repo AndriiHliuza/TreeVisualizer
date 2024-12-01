@@ -64,40 +64,12 @@ dropZone.addEventListener('drop', function (event) {
     handleFile(file);
 });
 
-function convertBinaryToD3Tree(jsonNode) {
-    const node = { value: jsonNode.value };
-    node.children = [];
-    if (jsonNode.left) node.children.push(convertBinaryToD3Tree(jsonNode.left));
-    if (jsonNode.right) node.children.push(convertBinaryToD3Tree(jsonNode.right));
-    return node;
-}
-
-
-function convertNaryTreeToD3Tree(jsonNode) {
+function convertToD3Tree(jsonNode) {
     const node = { value: jsonNode.value };
     if (jsonNode.children && Array.isArray(jsonNode.children)) {
-        node.children = jsonNode.children.map(convertNaryTreeToD3Tree);
+        node.children = jsonNode.children.map(convertToD3Tree);
     }
     return node;
-}
-
-function isNaryTree(node) {
-    if (node.children) {
-        return true;
-    }
-    return false;
-}
-
-function isBinaryTree(node) {
-    if (node.left) {
-        return true;
-    }
-
-    if (node.right) {
-        return true;
-    }
-
-    return false;
 }
 
 function drawTree(jsonData) {
@@ -110,20 +82,8 @@ function drawTree(jsonData) {
     // const width = window.innerWidth - margin.left - margin.right; // 100% width
     const width = window.innerWidth - margin.left - margin.right;
 
-    let convertedNode = null;
-    if (isBinaryTree(jsonData)) {
-        console.log("Binary tree");
-        convertedNode = convertBinaryToD3Tree(jsonData);
-    } else if (isNaryTree(jsonData)) {
-        console.log("N-ary tree");
-        convertedNode = convertNaryTreeToD3Tree(jsonData);
-    } else {
-        console.log("Falling back to default: binary tree");
-        convertedNode = convertBinaryToD3Tree(jsonData);
-    }
-
     // Convert the JSON data to a D3 hierarchy
-    const root = d3.hierarchy(convertedNode, d => d.children);
+    const root = d3.hierarchy(convertToD3Tree(jsonData), d => d.children);
 
     // Automatically adjust the height based on the tree's depth
     const nodeHeight = 100; // Space between nodes vertically
