@@ -13,6 +13,10 @@ function onResize() {
     }
 }
 
+function isEmptyObject(obj) {
+    return typeof obj === "object" && obj !== null && Object.keys(obj).length === 0;
+}
+
 window.addEventListener("resize", onResize);
 
 // Function to handle reading the file
@@ -27,8 +31,13 @@ function handleFile(file) {
                 const svg = document.querySelector("svg");
                 svg.innerHTML = "";
                 svg.classList.add("svgTree");
-                drawTree(jsonData);
-                exceptionWindow.textContent = "";
+                if (!isEmptyObject(jsonData)) {
+                    drawTree(jsonData);
+                    exceptionWindow.textContent = "";
+                } else{
+                    exceptionWindow.textContent = "Tree data is missing";
+                }
+
             } catch (error) {
                 exceptionWindow.textContent = "Error parsing JSON";
             }
