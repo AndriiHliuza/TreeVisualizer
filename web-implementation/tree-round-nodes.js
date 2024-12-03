@@ -192,32 +192,13 @@ function drawTree(jsonData) {
                 d3.select(this).attr("stroke", null);
             }));
 
-    // // Append ellipses for each node
-    // node.append("ellipse")
-    //     .attr("rx", 20) // Default horizontal radius
-    //     .attr("ry", 20) // Fixed vertical radius
-    //     .attr("fill", "white") // Set fill color
-    //     .attr("stroke", "steelblue") // Set border color
-    //     .attr("stroke-width", 3); // Set border thickness
-
-    node.append("rect")
-        .attr("width", d => {
-            const text = d.data.value;
-            const textLength = text.length;
-            return Math.max(50, textLength * 8); // Adjust width dynamically based on text length
-        })
-        .attr("height", 30) // Fixed height for the rectangle
-        .attr("x", d => {
-            const text = d.data.value;
-            const textLength = text.length;
-            return -Math.max(25, textLength * 4); // Center the rectangle horizontally
-        })
-        .attr("y", -15) // Center the rectangle vertically
+    // Append ellipses for each node
+    node.append("ellipse")
+        .attr("rx", 20) // Default horizontal radius
+        .attr("ry", 20) // Fixed vertical radius
         .attr("fill", "white") // Set fill color
         .attr("stroke", "steelblue") // Set border color
-        .attr("stroke-width", 3) // Set border thickness
-        .attr("rx", 5) // Rounded corner radius (horizontal)
-        .attr("ry", 5); // Rounded corner radius (vertical)
+        .attr("stroke-width", 3); // Set border thickness
         
     // Append text for each node, centered in the circle
     node.append("text")
@@ -226,20 +207,20 @@ function drawTree(jsonData) {
         .style("font-size", "18px")
         .text(d => d.data.value);
 
-    // node.each(function (d) {
-    //     const text = d.data.value;
-    //     const textLength = text.length;
+    node.each(function (d) {
+        const text = d.data.value;
+        const textLength = text.length;
 
-    //     // Dynamically adjust ellipse width
-    //     const rx = Math.max(20, textLength * 4); // Adjust horizontal radius based on text length
-    //     d3.select(this).select("ellipse").attr("rx", rx); // Set the dynamic width
+        // Dynamically adjust ellipse width
+        const rx = Math.max(20, textLength * 4); // Adjust horizontal radius based on text length
+        d3.select(this).select("ellipse").attr("rx", rx); // Set the dynamic width
 
-    //     // Dynamically adjust font size
-    //     const fontSize = Math.max(6, 16 - textLength / 2) + "px";
-    //     d3.select(this).select("text")
-    //         .style("font-size", fontSize)
-    //         .text(text);
-    // });
+        // Dynamically adjust font size
+        const fontSize = Math.max(6, 16 - textLength / 2) + "px";
+        d3.select(this).select("text")
+            .style("font-size", fontSize)
+            .text(text);
+    });
 }
 
 
